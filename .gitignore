@@ -1,0 +1,7 @@
+logs
+target
+/.idea_modules
+/.classpath
+/.project
+.idea
+.sbtopts
