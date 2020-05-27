@@ -10,7 +10,7 @@ object Dependencies {
 
   val Common: Seq[ModuleID] = Seq(
     "com.lightbend.akka" %% "akka-stream-alpakka-s3" % AlpakkaS3Version,
-    "com.amazonaws" % "aws-java-sdk-s3" % AmazonS3SdkVersion,
+    "com.amazonaws" % "aws-java-sdk-s3" % AmazonS3SdkVersion
   )
 
   val package1: Seq[ModuleID] = Seq(
@@ -22,6 +22,6 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-testkit" % AkkaHttpVersion % Test,
     "de.heikoseeberger" %% "akka-http-play-json" % AkkaHttpPlayJsonVersion,
-    "com.typesafe.akka" %% "akka-stream-kafka-testkit" % KafkaStreamsTestVersion,
+    "com.typesafe.akka" %% "akka-stream-kafka-testkit" % KafkaStreamsTestVersion
   )
 }
