@@ -6,8 +6,6 @@ organization in ThisBuild := "com.example"
 organizationName in ThisBuild := "Example"
 scalaVersion := "2.13.2"
 
-useCoursier := false
-
 lazy val root = (project in file("."))
   .settings(commonSettings)
   .aggregate(

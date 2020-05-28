@@ -5,7 +5,7 @@ import sbt.Keys.{name, organization, version, organizationName}
 
 
 object DockerSettings {
-  private lazy val dockerRepoHostStaging: String = sys.env.getOrElse("DOCKER_REGISTRY_HOST_STAGING", "dockerRepo-staging.example.com")
+  private lazy val dockerRepoHostStaging: String = sys.env.getOrElse("DOCKER_REGISTRY_HOST_STAGING", "index.docker.io")
   private lazy val dockerRepoDockerRepository: String = "/example-docker-local"
   private lazy val baseImageRepository = "openjdk:11.0.7-jre-slim"
   private lazy val gitCommit = sys.env.getOrElse("GIT_COMMIT", "local")
@@ -25,7 +25,7 @@ object DockerSettings {
 //    daemonUserUid := Some("67333"),
 //    dockerCommands ++= Seq(Cmd("USER", "example")),
     packageName in Docker := name.value,
-    dockerRepository in Docker := Some(dockerRepoHostStaging + dockerRepoDockerRepository),
+    dockerRepository := Some(dockerRepoHostStaging + dockerRepoDockerRepository),
     dockerUsername in Docker := Some(organizationName.value.toLowerCase()),
     dockerLabels := Map(
       "org.label-schema.vcs-ref" -> gitCommit,
