@@ -4,7 +4,7 @@ import ReleaseTransformations._
 name := "Demo"
 organization in ThisBuild := "com.example"
 organizationName in ThisBuild := "Example"
-scalaVersion := "2.12.6"
+scalaVersion := "2.13.2"
 
 lazy val root = (project in file("."))
   .settings(commonSettings)
@@ -19,37 +19,45 @@ lazy val common = (project in file("common"))
     name := "common",
     version := "1.0.0-SNAPSHOT",
     commonSettings,
-    libraryDependencies ++= Dependencies.Common
+    libraryDependencies ++= Dependencies.Common,
+    dependencyOverrides ++= Seq (
+      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.10.3",
+      "org.scala-lang.modules" % "scala-xml" % "1.1.0",
+      "commons-logging" % "commons-logging" % "1.1.3"
+    )
   )
 
 lazy val package1 = project.in(file("package1"))
   .settings(
     name := "package1",
-    version := "1.0.0-SNAPSHOT",
     commonSettings,
     DockerSettings.global,
-    libraryDependencies ++= Dependencies.Common ++ Dependencies.package1
+    libraryDependencies ++= Dependencies.Common ++ Dependencies.package1,
+    dependencyOverrides ++= Seq ()
   )
   .dependsOn(
     common % "compile->compile;test->test"
   )
-  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(JavaAppPackaging,DockerPlugin)
 
 lazy val package2 = project.in(file("package2"))
   .settings(
     name := "package2",
-    version := "1.0.0-SNAPSHOT",
     commonSettings,
     DockerSettings.global,
-    libraryDependencies ++= Dependencies.Common ++ Dependencies.package2
+    libraryDependencies ++= Dependencies.Common ++ Dependencies.package2,
+    dependencyOverrides ++= Seq ()
   )
   .dependsOn(
-    common % "compile->compile;test->test",
+//    common % "compile->compile;test->test",
     package1 % "compile->compile;test->test"
   )
-  .enablePlugins(JavaAppPackaging)
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 lazy val commonSettings = Seq(
+  Global / onChangedBuildSource := ReloadOnSourceChanges,
+  releaseIgnoreUntrackedFiles := true,
+  skip in publish := true,
   scalacOptions ++=  Seq(
     "-unchecked",
     "-feature",
@@ -74,11 +82,12 @@ releaseProcess := Seq[ReleaseStep](
   runClean,                                   // : ReleaseStep
   runTest,                                    // : ReleaseStep
   setReleaseVersion,                          // : ReleaseStep
-//  commitReleaseVersion,                       // : ReleaseStep, performs the initial git checks
-//  tagRelease,                                 // : ReleaseStep
+  commitReleaseVersion,                       // : ReleaseStep, performs the initial git checks
+  tagRelease,                                 // : ReleaseStep
   publishArtifacts,
-//  releaseStepTask(publishLocal in Docker),    // : ReleaseStep, checks whether `publishTo` is properly set up
-//  setNextVersion,                             // : ReleaseStep
-//  commitNextVersion,                          // : ReleaseStep
-//  pushChanges                               // : ReleaseStep, also checks that an upstream branch is properly configured
+  releaseStepTask(publish in Docker in package1),
+  releaseStepTask(publish in Docker in package2),  // : ReleaseStep, checks whether `publishTo` is properly set up
+  setNextVersion,                            // : ReleaseStep
+  commitNextVersion,                          // : ReleaseStep
+  pushChanges                                 // : ReleaseStep, also checks that an upstream branch is properly configured
 )
