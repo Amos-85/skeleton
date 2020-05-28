@@ -51,6 +51,7 @@ lazy val package2 = project.in(file("package2"))
 
 lazy val commonSettings = Seq(
   Global / onChangedBuildSource := ReloadOnSourceChanges,
+  skip in publish := true,
   scalacOptions ++=  Seq(
     "-unchecked",
     "-feature",
