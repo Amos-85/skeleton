@@ -4,7 +4,9 @@ import ReleaseTransformations._
 name := "Demo"
 organization in ThisBuild := "com.example"
 organizationName in ThisBuild := "Example"
-scalaVersion := "2.12.6"
+scalaVersion := "2.13.2"
+
+useCoursier := false
 
 lazy val root = (project in file("."))
   .settings(commonSettings)
@@ -50,6 +52,7 @@ lazy val package2 = project.in(file("package2"))
   .enablePlugins(JavaAppPackaging)
 
 lazy val commonSettings = Seq(
+  Global / onChangedBuildSource := ReloadOnSourceChanges,
   scalacOptions ++=  Seq(
     "-unchecked",
     "-feature",
