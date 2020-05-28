@@ -1,5 +1,5 @@
 import ReleaseTransformations._
-//import sbt.Keys._
+import sbtrelease.ReleaseStateTransformations.setNextVersion
 
 name := "Demo"
 organization in ThisBuild := "com.example"
@@ -17,42 +17,61 @@ lazy val root = (project in file("."))
 lazy val common = (project in file("common"))
   .settings(
     name := "common",
-    version := "1.0.0-SNAPSHOT",
     commonSettings,
     libraryDependencies ++= Dependencies.Common,
-    dependencyOverrides ++= Seq (
-      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.10.3",
-      "org.scala-lang.modules" % "scala-xml" % "1.1.0",
-      "commons-logging" % "commons-logging" % "1.1.3"
-    )
+//    dependencyOverrides ++= Seq (
+//      "com.fasterxml.jackson.core" % "jackson-annotations" % "2.10.3",
+//      "org.scala-lang.modules" % "scala-xml" % "1.1.0",
+//      "commons-logging" % "commons-logging" % "1.1.3"
+//    )
   )
 
 lazy val package1 = project.in(file("package1"))
+  .enablePlugins(PlayScala,BuildInfoPlugin,JavaAppPackaging,DockerPlugin)
   .settings(
     name := "package1",
     commonSettings,
+    buildInfoOptions += BuildInfoOption.ToJson,
     DockerSettings.global,
     libraryDependencies ++= Dependencies.Common ++ Dependencies.package1,
-    dependencyOverrides ++= Seq ()
+    dependencyOverrides ++= Seq (),
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      releaseStepTask(publish in Docker),
+      setNextVersion
+    ),
   )
   .dependsOn(
     common % "compile->compile;test->test"
   )
-  .enablePlugins(JavaAppPackaging,DockerPlugin)
+
 
 lazy val package2 = project.in(file("package2"))
+  .enablePlugins(JavaAppPackaging, DockerPlugin)
   .settings(
     name := "package2",
     commonSettings,
     DockerSettings.global,
     libraryDependencies ++= Dependencies.Common ++ Dependencies.package2,
-    dependencyOverrides ++= Seq ()
+    dependencyOverrides ++= Seq (),
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      releaseStepTask(publish in Docker),
+      setNextVersion
+    ),
   )
   .dependsOn(
-//    common % "compile->compile;test->test",
+    common % "compile->compile;test->test",
     package1 % "compile->compile;test->test"
   )
-  .enablePlugins(JavaAppPackaging, DockerPlugin)
 
 lazy val commonSettings = Seq(
   Global / onChangedBuildSource := ReloadOnSourceChanges,
@@ -87,7 +106,7 @@ releaseProcess := Seq[ReleaseStep](
   publishArtifacts,
   releaseStepTask(publish in Docker in package1),
   releaseStepTask(publish in Docker in package2),  // : ReleaseStep, checks whether `publishTo` is properly set up
-  setNextVersion,                            // : ReleaseStep
+  setNextVersion,                             // : ReleaseStep
   commitNextVersion,                          // : ReleaseStep
   pushChanges                                 // : ReleaseStep, also checks that an upstream branch is properly configured
 )

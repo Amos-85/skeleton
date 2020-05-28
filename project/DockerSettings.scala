@@ -1,7 +1,7 @@
-import com.typesafe.sbt.packager.Keys.{daemonGroup, daemonGroupGid, daemonUser, daemonUserUid, defaultLinuxInstallLocation, maintainer, packageName}
-import com.typesafe.sbt.packager.docker.Cmd
+import com.typesafe.sbt.packager.Keys.{daemonGroupGid, daemonUser,daemonGroup, daemonUserUid, defaultLinuxInstallLocation, maintainer, packageName}
+import com.typesafe.sbt.packager.docker.{ExecCmd,DockerChmodType,Cmd}
 import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport._
-import sbt.Keys.{name, organization, version, organizationName}
+import sbt.Keys.{name, organization, organizationName, version}
 
 
 object DockerSettings {
@@ -19,11 +19,24 @@ object DockerSettings {
     defaultLinuxInstallLocation in Docker := s"/${name.value}/app",
     dockerBaseImage := baseImageRepository,
     dockerExposedPorts := Seq(9000),
-//    daemonUser in Docker := "user",
-//    daemonGroup in Docker := "user",
-//    daemonGroupGid := Some("62084"),
-//    daemonUserUid := Some("67333"),
-//    dockerCommands ++= Seq(Cmd("USER", "example")),
+    dockerChmodType := DockerChmodType.UserGroupWriteExecute,
+    dockerAdditionalPermissions += (DockerChmodType.UserGroupWriteExecute, (defaultLinuxInstallLocation in Docker).value),
+//    dockerChmodType := DockerChmodType.Custom("chmod -R u=rwX,g=rwX"),
+//    daemonUser in Docker := "app",
+//    daemonGroup in Docker := "app",
+//    daemonGroupGid := Some("30444"),
+//    daemonUserUid := Some("30444"),
+    dockerCommands ++= Seq(
+      Cmd("RUN", "groupadd", "-g", "30444", "app"),
+      Cmd("RUN","useradd", "--system", "-M", "-u", "30444", "-g", "30444", "app"),
+      Cmd("RUN","chown", "-R", "app:app",s"${(defaultLinuxInstallLocation in Docker).value}"),
+      Cmd("USER", "app")
+    ),
+    dockerCommands := dockerCommands.value.filterNot {
+//      case Cmd("RUN", args @ _*) => args.contains("id")
+      case Cmd("USER",args @ _*) => args.contains("1001:0")
+      case cmd                       => false
+    },
     packageName in Docker := name.value,
     dockerRepository := Some(dockerRepoHostStaging + dockerRepoDockerRepository),
 //    dockerUsername in Docker := Some(organizationName.value.toLowerCase()),
