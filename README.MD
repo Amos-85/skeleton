@@ -1,7 +1,7 @@
-#Scala SBT Example Skeleton Of Multi Project with Play Framework
+# Scala SBT Example Skeleton Of Multi Project with Play Framework
 
 
-#####package1 => based on play framework
+##### package1 => based on play framework
   
 `sbt package1/run` => run play-framework  
 `sbt package1/docker:publishLocal` => will create docker image of the play application.  
@@ -15,7 +15,7 @@ If you have a dockerhub account you can update this environment variable (`DOCKE
 You'll need to create a docker repository that equal to the sub-project name => `name.value`.  
 
 
-#####package2 => without play-framework  
+##### package2 => without play-framework  
  `sbt package2/run` => run application  
  `sbt package2/docker:publishLocal` => will create docker image application.  
  `sbt package2/docker:clean` => will remove the docker image.  
